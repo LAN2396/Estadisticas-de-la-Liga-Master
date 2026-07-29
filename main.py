@@ -31,6 +31,10 @@ async def leer_index():
 @app.get("/manifest.json")
 async def leer_manifest():
     return FileResponse("manifest.json")
+
+@app.get("/index.html")
+async def leer_index_directo():
+    return FileResponse("index.html")
 def get_db_connection():
     # Conexión a la base de datos PostgreSQL en Neon
     conexion = psycopg2.connect(os.environ.get("DATABASE_URL"))
