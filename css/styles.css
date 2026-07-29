@@ -172,9 +172,21 @@ button:hover {
     .top4-header, .top4-row {
         min-width: 600px; /* Fuerza el ancho para que mantenga la proporción */
     }
+}
 
-    /* 5. Contadores de liga */
-    .league-counters {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    }
+/* 5. Contadores de liga (Fuera del @media para asegurar que funcione en todas partes) */
+.league-counters {
+    display: flex !important;
+    flex-wrap: wrap !important; /* Fuerza a los elementos a bajar de línea si no caben */
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100%;
+}
+
+.league-counters > div, 
+.league-counters > button, 
+.league-counters > .counter-box {
+    flex: 1 1 auto;
+    min-width: 80px; /* Ancho mínimo antes de verse obligados a bajar a otra fila */
+    max-width: 120px; /* Evita que una caja quede gigantesca si baja sola */
 }
