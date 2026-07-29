@@ -1,5 +1,7 @@
 import os
 import psycopg2
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from psycopg2.extras import RealDictCursor
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +19,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Esto le permite al servidor leer tus carpetas de diseño y funciones
+app.mount("/css", StaticFiles(directory="css"), name="css")
+app.mount("/js", StaticFiles(directory="js"), name="js")
 
+# Esto le dice que al entrar al link principal, muestre tu página web
+@app.get("/")
+async def leer_index():
+    return FileResponse("index.html")
 def get_db_connection():
     # Conexión a la base de datos PostgreSQL en Neon
     conexion = psycopg2.connect(os.environ.get("DATABASE_URL"))
