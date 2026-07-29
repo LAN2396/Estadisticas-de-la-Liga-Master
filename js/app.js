@@ -454,6 +454,95 @@ let textoEstadistica = statsLimpios.length > 0 ? ` <span style="color: var(--tex
     } catch (error) {
         console.error("Error al cargar stats:", error);
     }
+
+// --- 4. Renderizar Hitos por Liga ---
+        const divHitosLigas = document.getElementById("stats-hitos-ligas");
+        divHitosLigas.innerHTML = "";
+        
+        if (!data.hitos_por_liga || Object.keys(data.hitos_por_liga).length === 0) {
+            divHitosLigas.innerHTML = "<p style='color: var(--text-muted); text-align: center; grid-column: 1 / -1;'>No hay récords por liga registrados aún.</p>";
+        } else {
+            const logosLigas = {
+                "Serie A": "🇮🇹 Serie A", "La Liga": "🇪🇸 La Liga",
+                "Bundesliga": "🇩🇪 Bundesliga", "Premier League": "🇬🇧 Premier League"
+            };
+
+            const crearMiniTarjetaHito = (titulo, icono, hito, sufijo) => {
+                if (!hito) return `<div></div>`;
+                return `
+                    <div style="background: #2a2a2a; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #333;">
+                        <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 5px;">${icono} ${titulo}</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: var(--accent); margin-bottom: 2px;">${hito.valor} <span style="font-size: 0.7rem; color: #fff;">${sufijo}</span></p>
+                        <p style="font-weight: bold; color: var(--text-main); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${hito.equipo}</p>
+                        <p style="color: var(--text-muted); font-size: 0.75rem;">(${hito.año})</p>
+                    </div>
+                `;
+            };
+
+            let ligasHtml = "";
+            for (const [liga, hitos] of Object.entries(data.hitos_por_liga)) {
+                if (!hitos.max_pts) continue; // Si la liga aún no tiene registros, la saltamos
+
+                ligasHtml += `
+                <div style="background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                    <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 2px solid #444; padding-bottom: 5px; text-align: center;">${logosLigas[liga] || liga}</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        ${crearMiniTarjetaHito("Puntos", "📈", hitos.max_pts, "PTS")}
+                        ${crearMiniTarjetaHito("Goles", "⚽", hitos.max_gf, "GF")}
+                        ${crearMiniTarjetaHito("Defensa", "🛡️", hitos.min_gc, "GC")}
+                        ${crearMiniTarjetaHito("Menos Perdidos", "💪", hitos.min_pp, "PP")}
+                    </div>
+                </div>`;
+            }
+            divHitosLigas.innerHTML = ligasHtml || "<p style='color: var(--text-muted); text-align: center; grid-column: 1 / -1;'>No hay suficientes datos por liga.</p>";
+        }
+
+        // --- 5. Renderizar Movimientos (Ascensos / Descensos) ---
+        const divMovimientos = document.getElementById("stats-movimientos");
+        divMovimientos.innerHTML = "";
+        
+        if (!data.movimientos || Object.keys(data.movimientos).length === 0) {
+            divMovimientos.innerHTML = "<p style='color: var(--text-muted); text-align: center;'>No hay ascensos o descensos registrados aún.</p>";
+        } else {
+            // Convertimos a array y ordenamos: 1ro Campeonatos, 2do Ascensos, 3ro Descensos
+            const movsArray = Object.entries(data.movimientos).map(([equipo, stats]) => ({equipo, ...stats}));
+            movsArray.sort((a, b) => {
+                if (b.campeon_B !== a.campeon_B) return b.campeon_B - a.campeon_B;
+                if (b.ascensos !== a.ascensos) return b.ascensos - a.ascensos;
+                return b.descensos - a.descensos;
+            });
+
+            let movsHtml = `
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 0.95rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #444; background-color: #1e1e1e;">
+                            <th style="padding: 12px; text-align: left; color: var(--text-muted);">Equipo</th>
+                            <th style="padding: 12px; color: #ffd700;" title="Campeonatos de Serie B">🏆 Camp. B</th>
+                            <th style="padding: 12px; color: var(--success);" title="Ascensos a Serie A">⬆️ Ascensos</th>
+                            <th style="padding: 12px; color: var(--error);" title="Descensos a Serie B">⬇️ Descensos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            movsArray.forEach((m, index) => {
+                // Alternar colores de fondo para las filas (estilo cebra)
+                let bgRow = index % 2 === 0 ? "background-color: transparent;" : "background-color: #1e1e1e;";
+                movsHtml += `
+                <tr style="border-bottom: 1px solid #333; ${bgRow}">
+                    <td style="padding: 12px; text-align: left; font-weight: bold; color: var(--text-main);">${m.equipo}</td>
+                    <td style="padding: 12px; color: #ffd700; font-weight: bold;">${m.campeon_B > 0 ? m.campeon_B : '-'}</td>
+                    <td style="padding: 12px; color: var(--success); font-weight: bold;">${m.ascensos > 0 ? m.ascensos : '-'}</td>
+                    <td style="padding: 12px; color: var(--error); font-weight: bold;">${m.descensos > 0 ? m.descensos : '-'}</td>
+                </tr>
+                `;
+            });
+
+            movsHtml += `</tbody></table></div>`;
+            divMovimientos.innerHTML = movsHtml;
+        }    
+
 }
 
 // --- GUARDADO DE PREMIOS INDIVIDUALES (Restaurado) ---

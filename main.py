@@ -410,14 +410,70 @@ def obtener_estadisticas_globales():
     for torneo in palmares_agrupado:
         for equipo in palmares_agrupado[torneo]:
             palmares_agrupado[torneo][equipo].sort()
+
+    # --- 5. HITOS HISTÓRICOS POR LIGA ---
+    ligas = ["Serie A", "La Liga", "Bundesliga", "Premier League"]
+    hitos_por_liga = {}
+    for liga in ligas:
+        cursor.execute('''SELECT E.nombre as equipo, T.año, H.pts as valor FROM Historial_Top4 H JOIN Equipos E ON H.id_equipo = E.id_equipo JOIN Temporadas T ON H.id_temporada = T.id_temporada WHERE H.liga = %s ORDER BY H.pts DESC LIMIT 1''', (liga,))
+        m_pts = cursor.fetchone()
+        
+        cursor.execute('''SELECT E.nombre as equipo, T.año, H.gf as valor FROM Historial_Top4 H JOIN Equipos E ON H.id_equipo = E.id_equipo JOIN Temporadas T ON H.id_temporada = T.id_temporada WHERE H.liga = %s ORDER BY H.gf DESC LIMIT 1''', (liga,))
+        m_gf = cursor.fetchone()
+        
+        cursor.execute('''SELECT E.nombre as equipo, T.año, H.gc as valor FROM Historial_Top4 H JOIN Equipos E ON H.id_equipo = E.id_equipo JOIN Temporadas T ON H.id_temporada = T.id_temporada WHERE H.liga = %s ORDER BY H.gc ASC LIMIT 1''', (liga,))
+        m_gc = cursor.fetchone()
+        
+        cursor.execute('''SELECT E.nombre as equipo, T.año, H.pp as valor FROM Historial_Top4 H JOIN Equipos E ON H.id_equipo = E.id_equipo JOIN Temporadas T ON H.id_temporada = T.id_temporada WHERE H.liga = %s ORDER BY H.pp ASC LIMIT 1''', (liga,))
+        m_pp = cursor.fetchone()
+
+        hitos_por_liga[liga] = {
+            "max_pts": dict(m_pts) if m_pts else None,
+            "max_gf": dict(m_gf) if m_gf else None,
+            "min_gc": dict(m_gc) if m_gc else None,
+            "min_pp": dict(m_pp) if m_pp else None
+        }
+
+    # --- 6. PALMARÉS DE ASCENSOS Y DESCENSOS (SERIE B) ---
+    cursor.execute("SELECT id_descendido_1, id_descendido_2, id_ascendido_1, id_ascendido_2 FROM Ascensos_Descensos")
+    movs_raw = cursor.fetchall()
+    
+    # Obtenemos los nombres de todos los equipos para mapearlos rápido
+    cursor.execute("SELECT id_equipo, nombre FROM Equipos")
+    eq_dict = {row['id_equipo']: row['nombre'] for row in cursor.fetchall()}
+
+    movimientos = {}
+    for row in movs_raw:
+        d1 = eq_dict.get(row['id_descendido_1'])
+        d2 = eq_dict.get(row['id_descendido_2'])
+        a1 = eq_dict.get(row['id_ascendido_1']) # El ascendido 1 es el Campeón de la Serie B
+        a2 = eq_dict.get(row['id_ascendido_2']) # El ascendido 2 es el Subcampeón
+
+        for eq in [d1, d2, a1, a2]:
+            if eq and eq not in movimientos:
+                movimientos[eq] = {"campeon_B": 0, "ascensos": 0, "descensos": 0}
+        
+        if d1: movimientos[d1]["descensos"] += 1
+        if d2: movimientos[d2]["descensos"] += 1
+        if a1: 
+            movimientos[a1]["campeon_B"] += 1
+            movimientos[a1]["ascensos"] += 1
+        if a2:
+            movimientos[a2]["ascensos"] += 1
+
+    # Filtramos para enviar solo los equipos que tengan al menos 1 movimiento
+    movimientos_filtrados = {k: v for k, v in movimientos.items() if v["campeon_B"]>0 or v["ascensos"]>0 or v["descensos"]>0}
             
     conexion.close()
 
+    conexion.close()
     return {
         "hitos": hitos,
         "palmares": palmares_agrupado,
         "jugadores": premios_agrupados,
-        "hitos_jugadores": hitos_jugadores
+        "hitos_jugadores": hitos_jugadores,
+        "hitos_por_liga": hitos_por_liga,
+        "movimientos": movimientos_filtrados
     }
 
 # --- RUTA PARA EDITAR Y ELIMINAR EQUIPOS/TEMPORADAS ---
