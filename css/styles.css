@@ -1,0 +1,180 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2rem;
+    color: var(--accent);
+}
+
+header p {
+    color: var(--text-muted);
+}
+
+/* Grid del Dashboard */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tarjetas */
+.card {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.card h2 {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+/* Formularios */
+.input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: var(--text-main);
+    font-size: 1rem;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--accent);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: var(--accent-hover);
+}
+
+/* Notificaciones Toast */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.toast.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toast.success { background-color: var(--success); }
+.toast.error { background-color: var(--error); }
+
+/* =========================================
+   DISEÑO RESPONSIVO (TELÉFONOS MÓVILES)
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. Menú deslizable horizontalmente */
+    .nav-menu {
+        justify-content: flex-start;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px; /* Espacio para no tapar el borde con el scroll */
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-menu button {
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        padding: 10px 15px;
+    }
+
+    /* 2. Formularios en columna (uno debajo del otro) */
+    form[style*="display: flex"] {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    form[style*="display: flex"] > select, 
+    form[style*="display: flex"] > input, 
+    form[style*="display: flex"] > button {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0;
+    }
+
+    /* 3. Ajuste de grids (de lado a lado -> apilados) */
+    div[style*="grid-template-columns: 2fr 2fr"],
+    div[style*="grid-template-columns: 1fr 1fr"],
+    div[style*="grid-template-columns: 2fr 2fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 4. Tabla del Top 4: Contenedor con scroll horizontal para no aplastar los inputs */
+    #form-bloque-liga {
+        overflow-x: auto;
+        padding-bottom: 15px;
+    }
+    .top4-header, .top4-row {
+        min-width: 600px; /* Fuerza el ancho para que mantenga la proporción */
+    }
+
+    /* 5. Contadores de liga */
+    .league-counters {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+}

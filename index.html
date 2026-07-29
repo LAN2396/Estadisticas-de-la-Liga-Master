@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liga Máster - WE10 (AC Milan)</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .nav-menu { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .nav-menu button { width: auto; padding: 12px 25px; margin: 0; background-color: #2a2a2a; color: var(--text-muted); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; }
+        .nav-menu button.active { background-color: var(--card-bg); color: var(--accent); border-bottom: 3px solid var(--accent); font-weight: bold; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        input[type="number"] { -moz-appearance: textfield; appearance: textfield; text-align: center; font-weight: bold; font-size: 1.1rem; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .dashboard { max-width: 1000px; margin: 0 auto; }
+        select, input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background-color: #2a2a2a; color: var(--text-main); }
+        select:focus, input:focus { border-color: var(--accent); outline: none; }
+        
+        .top4-header { display: grid; grid-template-columns: 40px 3fr repeat(6, 1fr); gap: 15px; margin-bottom: 8px; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-weight: bold; }
+        .top4-row { display: grid; grid-template-columns: 40px 3fr repeat(6, 1fr); gap: 15px; margin-bottom: 12px; align-items: center; }
+        .top4-row label { font-weight: bold; color: var(--accent); text-align: center; font-size: 1.2rem; }
+
+        .league-counters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; text-align: center; }
+        .counter-box { background-color: #2a2a2a; padding: 10px; border-radius: 6px; border-top: 3px solid #444; }
+        .counter-box.full { border-top-color: var(--success); }
+        .counter-box h3 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;}
+        .counter-box p { font-size: 1.2rem; font-weight: bold; }
+        
+        /* Estilos del Salón de la Fama */
+        .historial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .historial-box { background-color: #2a2a2a; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); }
+        .historial-box h4 { margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; color: var(--accent); }
+        .historial-box p { font-size: 0.95rem; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏆 Winning Eleven 10</h1>
+    </header>
+
+    <nav class="nav-menu">
+        <button id="btn-tab-equipos" class="active"> Base de Datos (Equipos)</button>
+        <button id="btn-tab-temporadas"> Cierre de Temporada</button>
+        <button id="btn-tab-historial"> Estadísticas Globales</button>
+        <button id="btn-tab-admin"> Corrector de Equipos</button>
+    </nav>
+
+    <main class="dashboard">
+        
+        <!-- PESTAÑA 1: GESTOR DE EQUIPOS (Sin cambios) -->
+        <div id="tab-equipos" class="tab-content active">
+            <section class="card" style="border-left: 4px solid var(--accent);">
+                <h2 style="margin-bottom: 15px;">Completar Ligas</h2>
+                <form id="form-equipo" style="display: flex; gap: 15px; align-items: center;">
+                    <input type="text" id="nombre-equipo" required placeholder="Nombre del Equipo">
+                    <select id="liga-equipo" required>
+                        <option value="">Asignar Liga...</option>
+                        <option id="opt-serie-a" value="Serie A">Serie A</option>
+                        <option id="opt-la-liga" value="La Liga">La Liga</option>
+                        <option id="opt-bundesliga" value="Bundesliga">Bundesliga</option>
+                        <option id="opt-premier" value="Premier League">Premier League</option>
+                        <option id="opt-serie-b" value="Serie B">Serie B</option>
+                    </select>
+                    <button type="submit" style="margin-top: 0;">Guardar Equipo</button>
+                </form>
+                <div class="league-counters">
+                    <div class="counter-box" id="box-serie-a"><h3>Serie A</h3><p><span id="count-serie-a">0</span>/16</p></div>
+                    <div class="counter-box" id="box-la-liga"><h3>La Liga</h3><p><span id="count-la-liga">0</span>/16</p></div>
+                    <div class="counter-box" id="box-bundesliga"><h3>Bundesliga</h3><p><span id="count-bundesliga">0</span>/16</p></div>
+                    <div class="counter-box" id="box-premier"><h3>Premier</h3><p><span id="count-premier">0</span>/16</p></div>
+                    <div class="counter-box" id="box-serie-b"><h3>Serie B</h3><p><span id="count-serie-b">0</span>/8</p></div>
+                </div>
+
+                <!-- Agregar esto justo debajo de <div class="league-counters">...</div> -->
+                <div id="contenedor-finalizar" style="margin-top: 30px; text-align: center; border-top: 1px solid #444; padding-top: 20px;">
+                    <p style="color: var(--text-muted); margin-bottom: 10px;">¿Ya registraste los equipos de todas las ligas?</p>
+                    <button id="btn-finalizar-equipos" style="background-color: #dc2626; color: white; border: none; border-radius: 6px; padding: 12px 20px; font-weight: bold; cursor: pointer;">
+                        🔒 Bloquear y Ocultar Registro de Equipos
+                    </button>
+                </div>
+
+            </section>
+        </div>
+
+        <!-- PESTAÑA 2: CIERRE DE TEMPORADAS (Sin cambios) -->
+        <div id="tab-temporadas" class="tab-content">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                <section class="card">
+                    <h2>Cierre de Clasificación (Top 4)</h2>
+                    <form id="form-bloque-liga">
+                        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                            <select id="selector-año" required style="max-width: 200px;"></select>
+                            <select id="selector-liga" required>
+                                <option value="">Elige la Liga a registrar...</option>
+                                <option value="Serie A">Serie A</option>
+                                <option value="La Liga">La Liga</option>
+                                <option value="Bundesliga">Bundesliga</option>
+                                <option value="Premier League">Premier League</option>
+                            </select>
+                        </div>
+                        <div class="top4-header"><span>POS</span><span>EQUIPO</span><span>PTS</span><span>PG</span><span>PE</span><span>PP</span><span>GF</span><span>GC</span></div>
+                        <div id="filas-top4">
+                            <div class="top4-row"><label>1°</label><select id="equipo-1" required><option value="">Selecciona equipo...</option></select><input type="number" id="pts-1" required><input type="number" id="pg-1" required><input type="number" id="pe-1" required><input type="number" id="pp-1" required><input type="number" id="gf-1" required><input type="number" id="gc-1" required></div>
+                            <div class="top4-row"><label>2°</label><select id="equipo-2" required><option value="">Selecciona equipo...</option></select><input type="number" id="pts-2" required><input type="number" id="pg-2" required><input type="number" id="pe-2" required><input type="number" id="pp-2" required><input type="number" id="gf-2" required><input type="number" id="gc-2" required></div>
+                            <div class="top4-row"><label>3°</label><select id="equipo-3" required><option value="">Selecciona equipo...</option></select><input type="number" id="pts-3" required><input type="number" id="pg-3" required><input type="number" id="pe-3" required><input type="number" id="pp-3" required><input type="number" id="gf-3" required><input type="number" id="gc-3" required></div>
+                            <div class="top4-row"><label>4°</label><select id="equipo-4" required><option value="">Selecciona equipo...</option></select><input type="number" id="pts-4" required><input type="number" id="pg-4" required><input type="number" id="pe-4" required><input type="number" id="pp-4" required><input type="number" id="gf-4" required><input type="number" id="gc-4" required></div>
+                        </div>
+                        <button type="submit" style="margin-top: 20px;">Registrar Liga</button>
+                    </form>
+                </section>
+
+                <section class="card">
+                    <h2 style="margin-bottom: 15px;">Movimientos Serie A / B</h2>
+                    <form id="form-movimientos">
+                        <select id="mov-año" required style="margin-bottom: 15px; max-width: 200px;"></select>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div><h3 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--error);">Descienden a Serie B</h3><select id="descendido-1" required style="margin-bottom: 10px;"><option value="">Último lugar...</option></select><select id="descendido-2" required><option value="">Penúltimo...</option></select></div>
+                            <div><h3 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--success);">Ascienden a Serie A</h3><select id="ascendido-1" required style="margin-bottom: 10px;"><option value="">Campeón...</option></select><select id="ascendido-2" required><option value="">Subcampeón...</option></select></div>
+                        </div>
+                        <button type="submit" style="margin-top: 15px;">Registrar Ascensos/Descensos</button>
+                    </form>
+                </section>
+
+                <section class="card">
+                    <h2 style="margin-bottom: 15px;">Torneos de Copa (Campeón y Subcampeón)</h2>
+                    <form id="form-copas">
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                            <select id="copa-año" required style="max-width: 200px;"></select>
+                            <select id="selector-copa" required>
+                                <option value="">Selecciona el Torneo...</option>
+                                <option value="Copa Serie A">Copa Serie A</option><option value="Copa La Liga">Copa La Liga</option><option value="Copa Bundesliga">Copa Bundesliga</option><option value="Copa Premier League">Copa Premier League</option><option value="Champions League">🏆 Champions League</option><option value="UEFA Europa League">🏆 UEFA Europa League</option>
+                            </select>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div><label style="color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px;">🥇 Campeón</label><select id="campeon-copa" required><option value="">Selecciona equipo...</option></select></div>
+                            <div><label style="color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 5px;">🥈 Subcampeón</label><select id="subcampeon-copa" required><option value="">Selecciona equipo...</option></select></div>
+                        </div>
+                        <button type="submit" style="margin-top: 20px;">Registrar Copa</button>
+                    </form>
+                </section>
+
+                <section class="card">
+                    <h2 style="margin-bottom: 15px;">🌟 Premios Individuales</h2>
+                    <form id="form-premios">
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                            <select id="premios-año" required style="max-width: 200px;"></select>
+                            <select id="premios-competicion" required>
+                                <option value="">Selecciona la Competición...</option>
+                                <option value="Serie A">Serie A</option>
+                                <option value="Champions League">🏆 Champions League</option>
+                                <option value="Copa">Copa Nacional</option>
+                            </select>
+                        </div>
+
+                        <!-- MVP -->
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333;">
+                            <label style="color: #ffd700; font-weight: bold; margin-bottom: 8px;">🏅 Mejor Jugador (MVP)</label>
+                            <div style="display: grid; grid-template-columns: 2fr 2fr; gap: 10px;">
+                                <input type="text" id="mvp-nombre" required placeholder="Nombre del Jugador">
+                                <select id="mvp-equipo" required><option value="">Pertenece al Equipo...</option></select>
+                            </div>
+                        </div>
+
+                        <!-- Máximo Goleador -->
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333;">
+                            <label style="color: var(--success); font-weight: bold; margin-bottom: 8px;">⚽ Máximo Goleador</label>
+                            <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px;">
+                                <input type="text" id="gol-nombre" required placeholder="Nombre del Jugador">
+                                <select id="gol-equipo" required><option value="">Pertenece al Equipo...</option></select>
+                                <input type="number" id="gol-cant" required placeholder="Goles" min="1">
+                            </div>
+                        </div>
+
+                        <!-- Máximo Asistente -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: var(--accent); font-weight: bold; margin-bottom: 8px;">👟 Máximo Asistente</label>
+                            <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px;">
+                                <input type="text" id="asist-nombre" required placeholder="Nombre del Jugador">
+                                <select id="asist-equipo" required><option value="">Pertenece al Equipo...</option></select>
+                                <input type="number" id="asist-cant" required placeholder="Asistencias" min="1">
+                            </div>
+                        </div>
+
+                        <button type="submit" style="margin-top: 15px;">Guardar Distinciones</button>
+                    </form>
+                </section>
+
+            </div>
+        </div>
+
+                <!-- PESTAÑA 3: ESTADÍSTICAS GLOBALES (ANALÍTICA) -->
+        <div id="tab-historial" class="tab-content">
+            <section class="card">
+                <h2 style="text-align: center; font-size: 1.5rem; color: #ffd700; border-bottom: none; margin-bottom: 0;">🏆 Central de Estadísticas Globales 🏆</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 25px;">Récords históricos acumulados de todas las temporadas jugadas</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 30px;">
+                    
+                    <!-- Bloque 1: Palmarés Estructurado -->
+                    <div class="historial-box" style="border-left-color: #ffd700;">
+                        <h3 style="color: #ffd700; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">👑 Vitrina de Campeones</h3>
+                        <div id="stats-palmares" style="display: flex; flex-direction: column; gap: 20px;">
+                            <p style="color: var(--text-muted); text-align: center;">Cargando palmarés...</p>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 2: Hitos Históricos -->
+                    <div class="historial-box" style="border-left-color: var(--accent);">
+                        <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 1.3rem; text-align: center;">🔥 Hitos Históricos</h3>
+                        <div id="stats-hitos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <p style="color: var(--text-muted); text-align: center;">Cargando récords...</p>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 3: Récords Individuales -->
+                    <div class="historial-box" style="border-left-color: #8b5cf6;">
+                        <h3 style="color: #8b5cf6; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">🌟 Salón de la Fama Individual</h3>
+                        <div id="stats-jugadores" style="display: flex; flex-direction: column; gap: 20px;">
+                            <p style="color: var(--text-muted); text-align: center;">Cargando récords...</p>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 2.5: Récords Individuales Absolutos -->
+                    <div class="historial-box" style="border-left-color: #f97316;">
+                        <h3 style="color: #f97316; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">⚡ Récords Absolutos por Competición</h3>
+                        <div id="stats-hitos-jugadores" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">Cargando récords absolutos...</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+                        <!-- PESTAÑA 4: CORRECTOR DE EQUIPOS -->
+                <div id="tab-admin" class="tab-content">
+                    <section class="card" style="border-left: 4px solid var(--accent);">
+                        <h2 style="margin-bottom: 15px;">Filtro y Edición de Equipos</h2>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <select id="admin-filtro-liga" style="max-width: 300px;">
+                                <option value="">Selecciona una liga para ver sus equipos...</option>
+                                <option value="Serie A">Serie A</option>
+                                <option value="La Liga">La Liga</option>
+                                <option value="Bundesliga">Bundesliga</option>
+                                <option value="Premier League">Premier League</option>
+                                <option value="Serie B">Serie B</option>
+                            </select>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #444;">
+                                        <th style="padding: 10px;">ID</th>
+                                        <th style="padding: 10px;">Equipo</th>
+                                        <th style="padding: 10px; text-align: center;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-admin-equipos">
+                                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 15px;">Selecciona una liga arriba</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="js/app.js"></script>
+</body>
+</html>
