@@ -27,6 +27,10 @@ app.mount("/js", StaticFiles(directory="js"), name="js")
 @app.get("/")
 async def leer_index():
     return FileResponse("index.html")
+
+@app.get("/manifest.json")
+async def leer_manifest():
+    return FileResponse("manifest.json")
 def get_db_connection():
     # Conexión a la base de datos PostgreSQL en Neon
     conexion = psycopg2.connect(os.environ.get("DATABASE_URL"))
