@@ -22,6 +22,7 @@ app.add_middleware(
 # Esto le permite al servidor leer tus carpetas de diseño y funciones
 app.mount("/css", StaticFiles(directory="css"), name="css")
 app.mount("/js", StaticFiles(directory="js"), name="js")
+app.mount("/img", StaticFiles(directory="img"), name="img")
 
 # Esto le dice que al entrar al link principal, muestre tu página web
 @app.get("/")
