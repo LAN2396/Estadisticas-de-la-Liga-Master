@@ -72,7 +72,7 @@ label {
     color: var(--text-muted);
 }
 
-input {
+input, select {
     width: 100%;
     padding: 10px;
     border-radius: 6px;
@@ -82,7 +82,7 @@ input {
     font-size: 1rem;
 }
 
-input:focus {
+input:focus, select:focus {
     outline: none;
     border-color: var(--accent);
 }
@@ -130,18 +130,23 @@ button:hover {
    DISEÑO RESPONSIVO (TELÉFONOS MÓVILES)
    ========================================= */
 @media (max-width: 768px) {
-    /* 1. Menú deslizable horizontalmente */
+    /* 1. Menú principal en Cuadrícula de 2x2 */
     .nav-menu {
-        justify-content: flex-start;
-        overflow-x: auto;
-        white-space: nowrap;
-        padding-bottom: 5px; /* Espacio para no tapar el borde con el scroll */
-        -webkit-overflow-scrolling: touch;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* Dos columnas iguales */
+        gap: 10px;
+        justify-content: center;
+        overflow-x: hidden !important;
+        white-space: normal !important;
+        padding-bottom: 0 !important;
     }
+    
     .nav-menu button {
-        flex-shrink: 0;
-        font-size: 0.9rem;
-        padding: 10px 15px;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 12px 5px !important;
+        font-size: 0.85rem !important;
+        white-space: normal !important; /* Permite que el texto baje de línea si es largo */
     }
 
     /* 2. Formularios en columna (uno debajo del otro) */
@@ -157,27 +162,52 @@ button:hover {
         margin-left: 0;
     }
 
-    /* 3. Ajuste de grids (de lado a lado -> apilados) */
+    /* 3. Ajuste de grids generales */
     div[style*="grid-template-columns: 2fr 2fr"],
     div[style*="grid-template-columns: 1fr 1fr"],
     div[style*="grid-template-columns: 2fr 2fr 1fr"] {
         grid-template-columns: 1fr !important;
     }
 
-    /* 4. Tabla del Top 4: Contenedor con scroll horizontal para no aplastar los inputs */
+    /* 4. Tabla del Top 4: Ajuste exacto para que encaje en la pantalla sin zoom */
     #form-bloque-liga {
-        overflow-x: auto;
-        padding-bottom: 15px;
+        overflow-x: hidden !important;
+        padding-bottom: 0 !important;
+        width: 100%;
     }
+    
     .top4-header, .top4-row {
-        min-width: 600px; /* Fuerza el ancho para que mantenga la proporción */
+        min-width: 100% !important; /* Quitamos el bloqueo ancho que causaba el zoom out */
+        display: grid !important;
+        /* Tamaños justos: 20px(POS) + espacio sobrante(Equipo) + 6 cajas de 30px (números) */
+        grid-template-columns: 20px 1fr 30px 30px 30px 30px 30px 30px !important;
+        gap: 3px !important;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .top4-row input {
+        padding: 8px 2px !important;
+        font-size: 0.8rem !important;
+        text-align: center;
+    }
+    
+    .top4-row select {
+        padding: 8px 2px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .top4-header div, .top4-header span {
+        font-size: 0.65rem !important;
+        text-align: center;
+        word-wrap: break-word;
     }
 }
 
-/* 5. Contadores de liga (Fuera del @media para asegurar que funcione en todas partes) */
+/* 5. Contadores de liga (Fuera del @media para asegurar que baje la línea en el celular) */
 .league-counters {
     display: flex !important;
-    flex-wrap: wrap !important; /* Fuerza a los elementos a bajar de línea si no caben */
+    flex-wrap: wrap !important;
     justify-content: center !important;
     gap: 10px !important;
     width: 100%;
@@ -187,6 +217,6 @@ button:hover {
 .league-counters > button, 
 .league-counters > .counter-box {
     flex: 1 1 auto;
-    min-width: 80px; /* Ancho mínimo antes de verse obligados a bajar a otra fila */
-    max-width: 120px; /* Evita que una caja quede gigantesca si baja sola */
+    min-width: 80px; 
+    max-width: 120px; 
 }
