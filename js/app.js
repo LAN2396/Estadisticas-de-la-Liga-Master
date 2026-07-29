@@ -451,11 +451,7 @@ let textoEstadistica = statsLimpios.length > 0 ? ` <span style="color: var(--tex
             divJugadores.innerHTML = jugHtml;
         }
 
-    } catch (error) {
-        console.error("Error al cargar stats:", error);
-    }
-
-// --- 4. Renderizar Hitos por Liga ---
+        // --- 4. Renderizar Hitos por Liga ---
         const divHitosLigas = document.getElementById("stats-hitos-ligas");
         divHitosLigas.innerHTML = "";
         
@@ -541,8 +537,11 @@ let textoEstadistica = statsLimpios.length > 0 ? ` <span style="color: var(--tex
 
             movsHtml += `</tbody></table></div>`;
             divMovimientos.innerHTML = movsHtml;
-        }    
+        }
 
+    } catch (error) {
+        console.error("Error al cargar stats:", error);
+    }    
 }
 
 // --- GUARDADO DE PREMIOS INDIVIDUALES (Restaurado) ---
