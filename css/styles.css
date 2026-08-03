@@ -130,6 +130,38 @@ button:hover {
    DISEÑO RESPONSIVO (TELÉFONOS MÓVILES)
    ========================================= */
 @media (max-width: 768px) {
+    /* --- NUEVO: PREVENIR SCROLL HORIZONTAL EN TODA LA PÁGINA --- */
+    body, html {
+        overflow-x: hidden !important;
+        width: 100%;
+        padding: 10px !important; /* Reducimos un poco el padding lateral general en móviles */
+    }
+
+    /* --- NUEVO: AJUSTE DE TABLAS (ASCENSOS/DESCENSOS Y CORRECTOR) --- */
+    div[style*="overflow-x: auto"] {
+        overflow-x: hidden !important; /* Destruye la barra de scroll horizontal */
+    }
+
+    table {
+        width: 100% !important;
+        table-layout: fixed !important; /* Fuerza a la tabla a no salirse de la pantalla */
+    }
+
+    th, td {
+        padding: 8px 2px !important; /* Reduce los espacios en blanco entre las celdas */
+        font-size: 0.75rem !important; /* Letra un poquito más pequeña para encajar */
+        white-space: normal !important; /* Permite que el texto largo baje de línea */
+        word-wrap: break-word;
+        text-align: center !important;
+    }
+
+    /* Le damos un poco más de espacio a la columna del nombre del equipo para que no se vea aplastado */
+    th:first-child, td:first-child {
+        width: 40% !important; 
+        text-align: left !important;
+        padding-left: 5px !important;
+    }
+
     /* 1. Menú principal en Cuadrícula de 2x2 */
     .nav-menu {
         display: grid !important;

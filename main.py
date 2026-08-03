@@ -354,7 +354,7 @@ def obtener_estadisticas_globales():
         "min_pp": min_pp
     }
 
-    # --- 2. Récords Individuales (Palmarés - Este bloque se queda IGUAL que el tuyo) ---
+    # --- 2. RÉCORDS INDIVIDUALES ---
     cursor.execute('''
         SELECT P.competicion, P.categoria, P.nombre_jugador, E.nombre as equipo, P.estadistica, T.año
         FROM Premios_Individuales P
@@ -382,7 +382,7 @@ def obtener_estadisticas_globales():
         if p['estadistica'] > 0:
             premios_agrupados[comp][cat][jug]["stats"].append(f"{p['estadistica']} ({p['año']})")
 
-    # --- 3. PALMARÉS DE TORNEOS (Este bloque se queda IGUAL que el tuyo) ---
+    # --- 3. PALMARÉS DE TORNEOS ---
     cursor.execute('''
         SELECT E.nombre as equipo, H.liga as torneo, T.año 
         FROM Historial_Top4 H 
@@ -417,7 +417,7 @@ def obtener_estadisticas_globales():
         for equipo in palmares_agrupado[torneo]:
             palmares_agrupado[torneo][equipo].sort()
 
-    # --- 4. HITOS ABSOLUTOS DE JUGADORES (ACTUALIZADO PARA EMPATES) ---
+    # --- 4. HITOS ABSOLUTOS DE JUGADORES ---
     hitos_jugadores = {}
     configuracion_hitos = [
         ("Serie A", "Goleador", "serie_a_goles"),
@@ -441,7 +441,7 @@ def obtener_estadisticas_globales():
         ''', (comp, cat))
         hitos_jugadores[key] = agrupar_hitos(cursor.fetchall())
     
-    # --- 5. HITOS HISTÓRICOS POR LIGA (ACTUALIZADO PARA EMPATES) ---
+    # --- 5. HITOS HISTÓRICOS POR LIGA ---
     ligas = ["Serie A", "La Liga", "Bundesliga", "Premier League"]
     hitos_por_liga = {}
     for liga in ligas:
@@ -464,7 +464,45 @@ def obtener_estadisticas_globales():
             "min_pp": m_pp
         }
 
-    # (El bloque 6 de Movimientos Serie B se queda exactamente igual, justo antes de cerrar conexión)
+    # --- 6. PALMARÉS DE ASCENSOS Y DESCENSOS (SERIE B) ---
+    cursor.execute("SELECT id_descendido_1, id_descendido_2, id_ascendido_1, id_ascendido_2 FROM Ascensos_Descensos")
+    movs_raw = cursor.fetchall()
+    
+    cursor.execute("SELECT id_equipo, nombre FROM Equipos")
+    eq_dict = {row['id_equipo']: row['nombre'] for row in cursor.fetchall()}
+
+    movimientos = {}
+    for row in movs_raw:
+        d1 = eq_dict.get(row['id_descendido_1'])
+        d2 = eq_dict.get(row['id_descendido_2'])
+        a1 = eq_dict.get(row['id_ascendido_1']) 
+        a2 = eq_dict.get(row['id_ascendido_2']) 
+
+        for eq in [d1, d2, a1, a2]:
+            if eq and eq not in movimientos:
+                movimientos[eq] = {"campeon_B": 0, "ascensos": 0, "descensos": 0}
+        
+        if d1: movimientos[d1]["descensos"] += 1
+        if d2: movimientos[d2]["descensos"] += 1
+        if a1: 
+            movimientos[a1]["campeon_B"] += 1
+            movimientos[a1]["ascensos"] += 1
+        if a2:
+            movimientos[a2]["ascensos"] += 1
+
+    movimientos_filtrados = {k: v for k, v in movimientos.items() if v["campeon_B"]>0 or v["ascensos"]>0 or v["descensos"]>0}
+            
+    conexion.close()
+
+    # --- EL RETORNO QUE SOLUCIONA EL ERROR ---
+    return {
+        "hitos": hitos,
+        "palmares": palmares_agrupado,
+        "jugadores": premios_agrupados,
+        "hitos_jugadores": hitos_jugadores,
+        "hitos_por_liga": hitos_por_liga,
+        "movimientos": movimientos_filtrados
+    }
 
 @app.delete("/equipos/{id_equipo}")
 def eliminar_equipo(id_equipo: int):
